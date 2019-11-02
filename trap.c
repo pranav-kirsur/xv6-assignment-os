@@ -53,6 +53,18 @@ trap(struct trapframe *tf)
       ticks++;
       wakeup(&ticks);
       release(&tickslock);
+
+      //get current process
+      struct proc * current_process = myproc();
+      //check if process is valid
+      if(current_process)
+      {
+        //check if process is running
+        if(current_process->state == RUNNING)
+        {
+          current_process->rtime++;
+        }
+      }
     }
     lapiceoi();
     break;
