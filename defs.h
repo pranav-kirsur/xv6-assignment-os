@@ -11,6 +11,8 @@ struct stat;
 struct superblock;
 struct proc_stat;
 
+#define FCFS
+
 // bio.c
 void            binit(void);
 struct buf*     bread(uint, uint);
