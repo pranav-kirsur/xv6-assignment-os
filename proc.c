@@ -376,6 +376,14 @@ waitx(int* wtime, int* rtime)
 }
 
 
+//getpinfo syscall
+int
+getpinfo(struct proc_stat* process_state, int pid)
+{
+  return 0;
+}
+
+
 
 //PAGEBREAK: 42
 // Per-CPU process scheduler.

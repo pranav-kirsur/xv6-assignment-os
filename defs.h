@@ -9,6 +9,7 @@ struct spinlock;
 struct sleeplock;
 struct stat;
 struct superblock;
+struct proc_stat;
 
 // bio.c
 void            binit(void);
@@ -189,6 +190,8 @@ void            clearpteu(pde_t *pgdir, char *uva);
 
 //added syscalls
 int waitx(int* , int* );
+int getpinfo(struct proc_stat *, int pid);
+
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

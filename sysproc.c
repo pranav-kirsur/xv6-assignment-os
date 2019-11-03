@@ -88,14 +88,32 @@ int sys_waitx(void)
 {
   int *wtime;
   int *rtime;
-  if(argptr(1,(char**)&wtime,sizeof(int)) < 0)
+  if (argptr(0, (char **)&wtime, sizeof(int)) < 0)
   {
-      return -1;
+    return -1;
   }
-  if(argptr(1,(char**)&rtime,sizeof(int))<0)
+  if (argptr(1, (char **)&rtime, sizeof(int)) < 0)
   {
     return -1;
   }
 
-  return waitx(wtime,rtime);
+  return waitx(wtime, rtime);
+}
+
+int sys_getpinfo(void)
+{
+  struct proc_stat *process_stats = 0;
+  int pid;
+
+  if(argptr(0,(char**)process_stats,sizeof(process_stats))<0)
+  {
+    //unsuccessful
+    return 0;
+  }
+  if(argint(1,&pid)<0)
+  {
+    return 0;
+  }
+
+  return getpinfo(process_stats,pid);
 }
