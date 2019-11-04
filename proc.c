@@ -120,6 +120,9 @@ found:
   p->rtime = 0;
   p->etime = 0;
 
+  //Set default priority of process
+  p->priority = 60;
+
   return p;
 }
 
@@ -393,6 +396,31 @@ int getpinfo(struct proc_stat *process_state, int pid)
   return 0;
 }
 
+//set_priority syscall
+int set_priority(int pid, int new_priority)
+{
+  int old_priority = -1;
+  //acquire process table lock
+  acquire(&ptable.lock);
+
+  //scan through process table
+  struct proc* p;
+  for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+  {
+    if (p->pid == pid)
+    {
+      //store old priority and change the priority
+      old_priority = p->priority;
+      p->priority = new_priority;
+    }
+  }
+  //release process table lock
+  release(&ptable.lock);
+
+  //output old priority
+  return old_priority;
+}
+
 //PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
@@ -412,7 +440,7 @@ void scheduler(void)
     // Enable interrupts on this processor.
     sti();
 
-#ifdef FCFS
+#if SCHEDULER==1
     //FCFS scheduling
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
@@ -454,6 +482,52 @@ void scheduler(void)
       c->proc = 0;
     }
     release(&ptable.lock);
+
+#elif SCHEDULER==2
+    //Priority based scheduling
+    // Loop over process table looking for process to run.
+    acquire(&ptable.lock);
+
+    struct proc *highest_priority_process = 0;
+
+    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+    {
+      if (p->state != RUNNABLE)
+        continue;
+
+      if (!highest_priority_process)
+      {
+        highest_priority_process = p;
+      }
+      else
+      {
+        if (p->priority < highest_priority_process->priority)
+        {
+          highest_priority_process = p;
+        }
+      }
+    }
+    if (highest_priority_process)
+    {
+      p = highest_priority_process;
+      // Switch to chosen process.  It is the process's job
+      // to release ptable.lock and then reacquire it
+      // before jumping back to us.
+      c->proc = p;
+      switchuvm(p);
+      p->state = RUNNING;
+
+      swtch(&(c->scheduler), p->context);
+      switchkvm();
+
+      // Process is done running for now.
+      // It should have changed its p->state before coming back.
+      c->proc = 0;
+    }
+    release(&ptable.lock);
+
+
+
 
 #else
     // Loop over process table looking for process to run.

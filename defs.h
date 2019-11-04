@@ -11,7 +11,7 @@ struct stat;
 struct superblock;
 struct proc_stat;
 
-#define FCFS
+#define SCHEDULER 2
 
 // bio.c
 void            binit(void);
@@ -193,6 +193,7 @@ void            clearpteu(pde_t *pgdir, char *uva);
 //added syscalls
 int waitx(int* , int* );
 int getpinfo(struct proc_stat *, int pid);
+int set_priority(int,int);
 
 
 // number of elements in fixed-size array

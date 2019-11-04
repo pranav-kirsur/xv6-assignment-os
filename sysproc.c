@@ -117,3 +117,26 @@ int sys_getpinfo(void)
 
   return getpinfo(process_stats,pid);
 }
+
+
+//syscall will only change priority if it is in range [0,100]
+//returns -1 in error condition
+int sys_set_priority(void)
+{
+  int new_priority;
+  int pid;
+  if(argint(0,&pid)<0)
+  {
+    return -1;
+  }
+  if(argint(1,&new_priority)<0)
+  {
+    return -1;
+  }
+  if(new_priority<0 || new_priority>100)
+  {
+    return -1;
+  }
+  
+  return set_priority(pid,new_priority);
+}
