@@ -5,10 +5,10 @@
 
 int main()
 {
-    volatile int a=0;
+    volatile float a=0;
     for(volatile int i=0;i<100000000;i++)
     {
-        a++;
+        a = (a + 1.43 * 1.35);
     }
  
     exit();

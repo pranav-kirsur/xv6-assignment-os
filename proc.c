@@ -673,6 +673,26 @@ void wakeup(void *chan)
   release(&ptable.lock);
 }
 
+//Update running time for running processes
+void update_running_time()
+{
+  //Acquire process table lock
+  acquire(&ptable.lock);
+  struct proc* p;
+  for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+  {
+    // if process is running
+    if(p->state == RUNNING)
+    {
+      //update running time
+      p->rtime++;
+    }
+  }
+
+  //Release process table lock
+  release(&ptable.lock);
+}
+
 // Kill the process with the given pid.
 // Process won't exit until it returns
 // to user space (see trap in trap.c).

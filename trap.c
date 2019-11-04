@@ -51,20 +51,10 @@ trap(struct trapframe *tf)
     if(cpuid() == 0){
       acquire(&tickslock);
       ticks++;
+      //Update running time for all running processes
+      update_running_time();
       wakeup(&ticks);
       release(&tickslock);
-
-      //get current process
-      struct proc * current_process = myproc();
-      //check if process is valid
-      if(current_process)
-      {
-        //check if process is running
-        if(current_process->state == RUNNING)
-        {
-          current_process->rtime++;
-        }
-      }
     }
     lapiceoi();
     break;

@@ -11,7 +11,11 @@ struct stat;
 struct superblock;
 struct proc_stat;
 
-#define SCHEDULER 2
+
+//SCHEDULER:
+// 1:FCFS
+// 2:PBS 
+#define SCHEDULER 1
 
 // bio.c
 void            binit(void);
@@ -123,6 +127,7 @@ void            userinit(void);
 int             wait(void);
 void            wakeup(void*);
 void            yield(void);
+void            update_running_time(void);
 
 // swtch.S
 void            swtch(struct context**, struct context*);
