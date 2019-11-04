@@ -90,6 +90,14 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+  
+  //Add times to process
+  p->ctime = ticks;
+  p->rtime = 0;
+  p->etime = 0;
+
+  //Set default priority of process
+  p->priority = 60;
 
   release(&ptable.lock);
 
@@ -115,13 +123,7 @@ found:
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
 
-  //Add times to process
-  p->ctime = ticks;
-  p->rtime = 0;
-  p->etime = 0;
 
-  //Set default priority of process
-  p->priority = 60;
 
   return p;
 }
@@ -359,6 +361,7 @@ int waitx(int *wtime, int *rtime)
         *wtime = p->etime - p->ctime - p->rtime;
         *rtime = p->rtime;
 
+
         //Clean up times
         p->ctime = 0;
         p->etime = 0;
@@ -440,7 +443,7 @@ void scheduler(void)
     // Enable interrupts on this processor.
     sti();
 
-#if SCHEDULER==1
+#ifdef FCFS
     //FCFS scheduling
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
@@ -482,8 +485,9 @@ void scheduler(void)
       c->proc = 0;
     }
     release(&ptable.lock);
+#endif  
 
-#elif SCHEDULER==2
+#ifdef PBS
     //Priority based scheduling
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
@@ -526,10 +530,10 @@ void scheduler(void)
     }
     release(&ptable.lock);
 
+#endif
 
 
-
-#else
+#ifdef DEFAULT
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)

@@ -71,6 +71,8 @@ QEMU = $(shell if which qemu > /dev/null; \
 	echo "***" 1>&2; exit 1)
 endif
 
+
+
 CC = $(TOOLPREFIX)gcc
 AS = $(TOOLPREFIX)gas
 LD = $(TOOLPREFIX)ld
@@ -81,6 +83,25 @@ CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 &
 ASFLAGS = -m32 -gdwarf-2 -Wa,-divide
 # FreeBSD ld wants ``elf_i386_fbsd''
 LDFLAGS += -m $(shell $(LD) -V | grep elf_i386 2>/dev/null | head -n 1)
+
+
+#Add appropriate macro according to SCHEDULER
+
+ifeq ($(strip $(SCHEDULER)),)
+override SCHEDULER := DEFAULT
+endif
+
+ifeq ($(SCHEDULER),FCFS)
+CFLAGS +="-DFCFS"
+endif
+
+ifeq ($(SCHEDULER),DEFAULT)
+CFLAGS +="-DDEFAULT"
+endif
+
+ifeq ($(SCHEDULER),PBS)
+CFLAGS +="-DPBS"
+endif
 
 # Disable PIE when possible (for Ubuntu 16.10 toolchain)
 ifneq ($(shell $(CC) -dumpspecs 2>/dev/null | grep -e '[^f]no-pie'),)

@@ -15,7 +15,7 @@ struct proc_stat;
 //SCHEDULER:
 // 1:FCFS
 // 2:PBS 
-#define SCHEDULER 1
+#define SCHEDULER 2
 
 // bio.c
 void            binit(void);
