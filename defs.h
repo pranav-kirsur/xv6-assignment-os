@@ -12,10 +12,8 @@ struct superblock;
 struct proc_stat;
 
 
-//SCHEDULER:
-// 1:FCFS
-// 2:PBS 
-#define SCHEDULER 2
+
+#define MLFQ 1
 
 // bio.c
 void            binit(void);

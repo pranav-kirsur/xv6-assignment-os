@@ -64,6 +64,8 @@ struct proc
   int etime;                  // End time
   int rtime;                  // Run time
   int priority;               // Process priority
+  int queue;                  // Current queue of the process
+  int ticks_in_current_slice; // Ticks in current time slice
 };
 
 // Process memory is laid out contiguously, low addresses first:

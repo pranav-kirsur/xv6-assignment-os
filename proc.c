@@ -21,6 +21,12 @@ extern void trapret(void);
 
 static void wakeup1(void *chan);
 
+//Queues for MLFQ
+struct proc *queues[5][NPROC];
+// Note that values will initially automatically be 0
+int count_in_queues[5];
+int max_ticks_in_queue[5] = {1, 2, 4, 8, 16};
+
 void pinit(void)
 {
   initlock(&ptable.lock, "ptable");
@@ -90,7 +96,7 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
-  
+
   //Add times to process
   p->ctime = ticks;
   p->rtime = 0;
@@ -98,6 +104,16 @@ found:
 
   //Set default priority of process
   p->priority = 60;
+
+#ifdef MLFQ
+  //Add process to queue 0 of MLFQ
+  queues[0][count_in_queues[0]] = p;
+  count_in_queues[0]++;
+
+  p->queue = 0;
+  p->ticks_in_current_slice = 0;
+
+#endif
 
   release(&ptable.lock);
 
@@ -122,8 +138,6 @@ found:
   p->context = (struct context *)sp;
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
-
-
 
   return p;
 }
@@ -361,7 +375,6 @@ int waitx(int *wtime, int *rtime)
         *wtime = p->etime - p->ctime - p->rtime;
         *rtime = p->rtime;
 
-
         //Clean up times
         p->ctime = 0;
         p->etime = 0;
@@ -407,7 +420,7 @@ int set_priority(int pid, int new_priority)
   acquire(&ptable.lock);
 
   //scan through process table
-  struct proc* p;
+  struct proc *p;
   for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
   {
     if (p->pid == pid)
@@ -485,7 +498,7 @@ void scheduler(void)
       c->proc = 0;
     }
     release(&ptable.lock);
-#endif  
+#endif
 
 #ifdef PBS
     //Priority based scheduling
@@ -532,8 +545,68 @@ void scheduler(void)
 
 #endif
 
+#ifdef MLFQ
+    // Multilevel feedback queue scheduling
 
-#ifdef DEFAULT
+    // Loop over process table looking for process to run.
+    acquire(&ptable.lock);
+
+    //See which processes have expired their time slices
+    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+    {
+      if (p->state != RUNNABLE)
+        continue;
+      if (p->ticks_in_current_slice >= max_ticks_in_queue[p->queue])
+      {
+        if (p->queue != 4)
+        {
+          //demote priority
+          p->queue++;
+          p->ticks_in_current_slice = 0;
+        }
+      }
+    }
+
+    struct proc* process_to_run = 0;
+    // Run processes in order of priority
+    for (int priority = 0; priority < 5; priority++)
+    {
+      for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+      {
+        if (p->state != RUNNABLE)
+          continue;
+        if(p->queue == priority)
+        {
+          process_to_run = p;
+          goto down;
+        }
+      }
+    }
+  down:
+    // If process found
+    if (process_to_run)
+    {
+      // Switch to chosen process.  It is the process's job
+      // to release ptable.lock and then reacquire it
+      // before jumping back to us.
+      p = process_to_run;
+      c->proc = p;
+      switchuvm(p);
+      p->state = RUNNING;
+
+      swtch(&(c->scheduler), p->context);
+      switchkvm();
+
+      // Process is done running for now.
+      // It should have changed its p->state before coming back.
+      c->proc = 0;
+    }
+
+    release(&ptable.lock);
+
+#endif
+
+#ifdef DEFAULTs
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
@@ -682,14 +755,19 @@ void update_running_time()
 {
   //Acquire process table lock
   acquire(&ptable.lock);
-  struct proc* p;
+  struct proc *p;
   for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
   {
     // if process is running
-    if(p->state == RUNNING)
+    if (p->state == RUNNING)
     {
       //update running time
       p->rtime++;
+
+//update ticks_in_current_slice in case of MLFQ
+#ifdef MLFQ
+      p->ticks_in_current_slice++;
+#endif
     }
   }
 
