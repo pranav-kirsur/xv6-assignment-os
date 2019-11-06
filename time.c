@@ -11,8 +11,7 @@ int main(int argc, char* argv[])
     if(pid == 0)
     {
         //execute the given program
-        exec(argv[1],argv);
-
+        exec(argv[1],argv+1);
     }
     else
     {
