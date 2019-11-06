@@ -103,6 +103,10 @@ ifeq ($(SCHEDULER),PBS)
 CFLAGS +="-DPBS"
 endif
 
+ifeq ($(SCHEDULER),MLFQ)
+CFLAGS +="-DMLFQ"
+endif
+
 # Disable PIE when possible (for Ubuntu 16.10 toolchain)
 ifneq ($(shell $(CC) -dumpspecs 2>/dev/null | grep -e '[^f]no-pie'),)
 CFLAGS += -fno-pie -no-pie

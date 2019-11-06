@@ -558,11 +558,14 @@ void scheduler(void)
         continue;
       if (p->ticks_in_current_slice >= max_ticks_in_queue[p->queue])
       {
+        //cprintf("Process %d hit %d ticks\n",p->pid,p->ticks_in_current_slice);
         if (p->queue != 4)
         {
           //demote priority
           p->queue++;
           p->ticks_in_current_slice = 0;
+
+          //cprintf("Process %d priority demoted to %d\n",p->pid,p->queue);
         }
       }
     }
@@ -606,7 +609,7 @@ void scheduler(void)
 
 #endif
 
-#ifdef DEFAULTs
+#ifdef DEFAULT
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)

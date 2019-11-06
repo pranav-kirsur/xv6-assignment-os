@@ -12,9 +12,6 @@ struct superblock;
 struct proc_stat;
 
 
-
-#define MLFQ 1
-
 // bio.c
 void            binit(void);
 struct buf*     bread(uint, uint);
