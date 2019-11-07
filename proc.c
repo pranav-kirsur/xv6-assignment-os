@@ -754,6 +754,11 @@ void sleep(void *chan, struct spinlock *lk)
   p->chan = chan;
   p->state = SLEEPING;
 
+ #ifdef MLFQ
+    //if voluntarily released cpu then reset time slice
+    p->ticks_in_current_slice = 0;
+ #endif
+
   sched();
 
   // Tidy up.
