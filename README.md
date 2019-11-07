@@ -258,4 +258,7 @@ Run
 $ make qemu SCHEDULER=<scheduler>
 ```
 
-where `SCHEDULER` may be FCFS, PBS, DEFAULT(Round Robin), or MLFQ
+where `SCHEDULER` may be FCFS, PBS, DEFAULT(Round Robin), or MLFQ.
+
+# Conclusion 
+Thus we have written the specified syscalls and implemented FCFS, PBS, and MLFQ scheduling for xv6.
