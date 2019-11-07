@@ -441,9 +441,8 @@ int getpinfo(struct proc_stat *process_state, int pid)
 
   //release process table lock
   release(&ptable.lock);
-  
-  return flag_found;
 
+  return flag_found;
 }
 
 //set_priority syscall
@@ -604,6 +603,24 @@ void scheduler(void)
       }
     }
 
+    //implements aging
+    //promote processes with longer wait times
+    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+    {
+      if (p->state != RUNNABLE)
+        continue;
+      // if waiting too long
+      if(ticks - p->last_executed > 1000)
+      {
+        if(p->queue!=0)
+        {
+          p->queue--;
+          p->ticks_in_current_slice = 0;
+        }
+
+      }
+    }
+
     struct proc *process_to_run = 0;
     // Run processes in order of priority
     for (int priority = 0; priority < 5; priority++)
@@ -754,10 +771,10 @@ void sleep(void *chan, struct spinlock *lk)
   p->chan = chan;
   p->state = SLEEPING;
 
- #ifdef MLFQ
-    //if voluntarily released cpu then reset time slice
-    p->ticks_in_current_slice = 0;
- #endif
+#ifdef MLFQ
+  //if voluntarily released cpu then reset time slice
+  p->ticks_in_current_slice = 0;
+#endif
 
   sched();
 
@@ -811,6 +828,7 @@ void update_running_time()
 #ifdef MLFQ
       p->ticks_in_current_slice++;
       p->ticks[p->queue]++;
+      p->last_executed = ticks;
 #endif
     }
   }

@@ -68,6 +68,7 @@ struct proc
   int ticks_in_current_slice; // Ticks in current time slice
   int num_run;                // Number of times process is run
   int ticks[5];               // Number of ticks received at each of the five queues
+  int last_executed;          // Last execution time
 };
 
 // Process memory is laid out contiguously, low addresses first:
