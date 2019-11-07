@@ -66,6 +66,8 @@ struct proc
   int priority;               // Process priority
   int queue;                  // Current queue of the process
   int ticks_in_current_slice; // Ticks in current time slice
+  int num_run;                // Number of times process is run
+  int ticks[5];               // Number of ticks received at each of the five queues
 };
 
 // Process memory is laid out contiguously, low addresses first:

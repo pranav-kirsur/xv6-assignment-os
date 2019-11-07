@@ -10,6 +10,7 @@ int main(int argc, char* argv[])
     int pid = fork();
     if(pid == 0)
     {
+        //printf(1,"Executing %s\n",argv[1]);
         //execute the given program
         exec(argv[1],argv+1);
     }

@@ -113,6 +113,12 @@ found:
   p->queue = 0;
   p->ticks_in_current_slice = 0;
 
+  p->num_run = 0;
+  for (int i = 0; i < 5; i++)
+  {
+    p->ticks[i] = 0;
+  }
+
 #endif
 
   release(&ptable.lock);
@@ -409,7 +415,35 @@ int waitx(int *wtime, int *rtime)
 //getpinfo syscall
 int getpinfo(struct proc_stat *process_state, int pid)
 {
-  return 0;
+
+  //acquire process table lock
+  acquire(&ptable.lock);
+
+  //scan through process table
+  struct proc *p;
+  int flag_found = 0;
+  for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+  {
+    if (p->pid == pid)
+    {
+      //set flag
+      flag_found = 1;
+      //copy data into struct
+      process_state->current_queue = p->queue;
+      process_state->num_run = p->num_run;
+      process_state->pid = p->pid;
+      process_state->runtime = (float)p->rtime;
+      for (int i = 0; i < 5; i++)
+        process_state->ticks[i] = process_state->ticks[i];
+      break;
+    }
+  }
+
+  //release process table lock
+  release(&ptable.lock);
+  
+  return flag_found;
+
 }
 
 //set_priority syscall
@@ -570,7 +604,7 @@ void scheduler(void)
       }
     }
 
-    struct proc* process_to_run = 0;
+    struct proc *process_to_run = 0;
     // Run processes in order of priority
     for (int priority = 0; priority < 5; priority++)
     {
@@ -578,7 +612,7 @@ void scheduler(void)
       {
         if (p->state != RUNNABLE)
           continue;
-        if(p->queue == priority)
+        if (p->queue == priority)
         {
           process_to_run = p;
           goto down;
@@ -593,6 +627,7 @@ void scheduler(void)
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
       p = process_to_run;
+      p->num_run++;
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
@@ -770,6 +805,7 @@ void update_running_time()
 //update ticks_in_current_slice in case of MLFQ
 #ifdef MLFQ
       p->ticks_in_current_slice++;
+      p->ticks[p->queue]++;
 #endif
     }
   }
