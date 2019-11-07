@@ -534,6 +534,7 @@ void scheduler(void)
 #endif
 
 #ifdef PBS
+    //cprintf("pbs");
     //Priority based scheduling
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
