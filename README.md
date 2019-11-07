@@ -260,5 +260,22 @@ $ make qemu SCHEDULER=<scheduler>
 
 where `SCHEDULER` may be FCFS, PBS, DEFAULT(Round Robin), or MLFQ.
 
+# Performance comparision
+
+We run the same command
+```
+$ time foo 3
+```
+in all different compiled versions.
+
+DEFAULT:    Wait time is 2665, Running time is 862\
+FCFS:   Wait time is 2646, Running time is 894\
+PBS:    Wait time is 2627, Running time is 877\
+MLFQ:   Wait time is 2684, Running time is 880
+
+Thus we see a roughly similar performance among the scheduling algorithms.
+
+This is because the processes that foo creates are all CPU bound.
+
 # Conclusion 
 Thus we have written the specified syscalls and implemented FCFS, PBS, and MLFQ scheduling for xv6.
