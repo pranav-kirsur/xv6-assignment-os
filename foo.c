@@ -22,7 +22,8 @@ int main(int argc, char **argv)
         else if (id > 0)
         { 
             //in parent
-            printf(1, "Parent %d creating child  %d\n", getpid(), id);
+            printf(1, "Parent %d creating child  %d with priority %d\n", getpid(), id, 60-k);
+            set_priority(id, 60-k);
 
         }
         else
