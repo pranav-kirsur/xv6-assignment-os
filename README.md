@@ -1,6 +1,9 @@
-# Report for Assignment 5
+# Report for xv6 assigment
 # Enhancing xv6 OS
 
+Modifying the xv6 operating system by adding syscalls and modifying the scheduler for process scheduling.
+
+This project was done as part of the Operating Systems course at IIIT Hyderabad.
 
 # waitx syscall
 
